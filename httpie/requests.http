@@ -7,19 +7,19 @@ GET {{baseUrl}}/health
 POST {{baseUrl}}/invoke
 Content-Type: application/json
 
-{"prompt":"Responde hola", "model":"auto", "yolo":false}
+{"prompt":"Say hello", "model":"auto", "yolo":false}
 
 ### Job
 POST {{baseUrl}}/jobs
 Content-Type: application/json
 
-{"prompt":"Crea hello.py con un saludo"}
+{"prompt":"Create hello.py with a greeting"}
 
 ### Verify and retry
 POST {{baseUrl}}/run
 Content-Type: application/json
 
-{"prompt":"Crea hello.py con un saludo", "check":"python3 hello.py", "max_attempts":3}
+{"prompt":"Create hello.py with a greeting", "check":"python3 hello.py", "max_attempts":3}
 
 ### List jobs (use an ID from this response for get/cancel/stream)
 GET {{baseUrl}}/jobs
@@ -28,4 +28,4 @@ GET {{baseUrl}}/jobs
 POST {{baseUrl}}/schedules
 Content-Type: application/json
 
-{"cron":"0 9 * * 1-5", "prompt":"Revisa el proyecto", "name":"Revisión diaria", "model":"auto"}
+{"cron":"0 9 * * 1-5", "prompt":"Review the project", "name":"Daily review", "model":"auto"}

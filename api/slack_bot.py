@@ -280,7 +280,7 @@ class ActiveJobRegistry:
 def is_cancel_command(text: str) -> bool:
     """Recognize exact cancellation commands without hijacking normal prompts."""
     command = " ".join((text or "").strip().lower().split())
-    return command in {"cancel", "cancelar", "stop", "detener", "/gemini cancel"}
+    return command in {"cancel", "stop", "/gemini cancel"}
 
 
 def download_slack_files(

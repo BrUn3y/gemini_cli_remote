@@ -1,45 +1,45 @@
-# Conectar Gemini CLI Remote con Slack
+# Connect Gemini CLI Remote to Slack
 
-1. En https://api.slack.com/apps elige **Create New App → From a manifest**.
-   Selecciona tu workspace y pega [slack/manifest.yaml](slack/manifest.yaml).
-2. Instala la app en el workspace. En **OAuth & Permissions**, copia el
-   **Bot User OAuth Token** (`xoxb-...`) a `SLACK_BOT_TOKEN` en `.env`.
-3. En **Basic Information → App-Level Tokens**, crea un token con
-   `connections:write`. Copia el token `xapp-...` a `SLACK_APP_TOKEN`.
-4. Verifica que **Socket Mode** esté activado. El manifiesto incluye los scopes
-   `chat:write`, `channels:history` y `files:read`, y el evento `message.channels`.
-5. Invita al bot a un canal público: `/invite @gemini_cli_remote`.
-6. Configura la autenticación de Gemini en `.env` como indica el README y aplica
-   la configuración:
+1. At https://api.slack.com/apps, choose **Create New App → From a manifest**.
+   Select your workspace and paste [slack/manifest.yaml](slack/manifest.yaml).
+2. Install the app in your workspace. Under **OAuth & Permissions**, copy the
+   **Bot User OAuth Token** (`xoxb-...`) into `SLACK_BOT_TOKEN` in `.env`.
+3. Under **Basic Information → App-Level Tokens**, create a token with
+   `connections:write`. Copy the `xapp-...` token into `SLACK_APP_TOKEN`.
+4. Make sure **Socket Mode** is enabled. The manifest includes the `chat:write`,
+   `channels:history`, and `files:read` scopes and the `message.channels` event.
+5. Invite the bot to a public channel: `/invite @gemini_cli_remote`.
+6. Configure Gemini authentication in `.env` as described in the README, then
+   apply the configuration:
 
 ```bash
-# Contenedor:
+# Container:
 podman compose up -d --force-recreate
 podman compose logs -f gemini
 
-# O servicio nativo:
+# Or a native service:
 sudo systemctl restart gemini-cli-remote.service
 sudo journalctl -u gemini-cli-remote.service -n 60 --no-pager
 ```
 
-Escribe en el canal sin mencionar al bot. La respuesta aparece en un hilo y
-actualiza un indicador mientras Gemini trabaja. Las preguntas posteriores del
-mismo hilo incluyen el contexto anterior. Los archivos adjuntos se descargan en
-`SLACK_UPLOAD_DIR` y Gemini recibe sus rutas locales.
+Write a message in the channel without mentioning the bot. Its reply appears in
+a thread, with a status indicator that updates while Gemini works. Follow-up
+questions in the same thread include the previous context. Attachments are
+downloaded to `SLACK_UPLOAD_DIR`, and Gemini receives their local paths.
 
-Para cancelar un trabajo activo, escribe `cancelar`, `cancel` o `stop` en ese
-hilo. Las tareas cron pueden publicar sus resultados si incluyen el `channel`
-correcto o si configuras `SLACK_DEFAULT_CHANNEL`.
+To cancel an active job, type `cancel` or `stop` in its thread. Cron tasks can
+post their results when they include the correct `channel` or when you set
+`SLACK_DEFAULT_CHANNEL`.
 
-Opciones de `.env`: `SLACK_ALLOWED_CHANNELS` limita los canales por ID,
-`SLACK_MAX_CONCURRENT` limita los trabajos simultáneos (2 por defecto) y
-`GEMINI_INVOKE_TIMEOUT` limita la espera (600 segundos). Los límites y la limpieza
-de adjuntos se documentan en `.env.example`.
+Options in `.env`: `SLACK_ALLOWED_CHANNELS` restricts channels by ID,
+`SLACK_MAX_CONCURRENT` limits simultaneous jobs (2 by default), and
+`GEMINI_INVOKE_TIMEOUT` limits the wait time (600 seconds). Attachment limits
+and cleanup options are documented in `.env.example`.
 
-Si falta uno o ambos tokens, `serve-all` inicia solo la API. Si falla la conexión
-a Slack con ambos tokens presentes, el supervisor detiene los procesos y
-systemd/Compose puede reiniciar el servicio. Consulta los logs para corregir
-scopes, tokens o conectividad.
+If either or both tokens are missing, `serve-all` starts the API on its own.
+If the Slack connection fails with both tokens present, the supervisor stops
+the processes so systemd or Compose can restart the service. Check the logs to
+resolve scope, token, or connectivity issues.
 
-Socket Mode establece una conexión saliente: no requiere abrir un puerto
-público ni configurar una URL HTTP de eventos.
+Socket Mode uses an outbound connection: it requires neither a public port nor
+an HTTP event URL.

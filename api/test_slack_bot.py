@@ -19,7 +19,7 @@ import slack_bot
 # should_handle
 # --------------------------------------------------------------------------- #
 def test_should_handle_accepts_plain_user_message():
-    assert slack_bot.should_handle({"text": "hola gemini", "channel": "C1", "user": "U1"})
+    assert slack_bot.should_handle({"text": "hello gemini", "channel": "C1", "user": "U1"})
 
 
 def test_should_handle_rejects_bot_messages():
@@ -181,7 +181,7 @@ def test_list_thread_attachments_restores_prior_files(tmp_path):
 
     assert [item["name"] for item in attachments] == ["photo.png", "notes.txt"]
     assert attachments[0]["mimetype"] == "image/png"
-    prompt = slack_bot.add_attachments_to_prompt("¿qué dice la imagen anterior?", attachments, [])
+    prompt = slack_bot.add_attachments_to_prompt("What does the previous image say?", attachments, [])
     assert str(first) in prompt and str(second) in prompt
 
 
@@ -316,9 +316,9 @@ def test_cancel_job_sends_delete():
 
 
 def test_cancel_commands_and_active_job_registry():
-    assert slack_bot.is_cancel_command("  CANCELAR ")
+    assert slack_bot.is_cancel_command("  CANCEL ")
     assert slack_bot.is_cancel_command("/gemini cancel")
-    assert not slack_bot.is_cancel_command("cancelar el schedule de mañana")
+    assert not slack_bot.is_cancel_command("cancel tomorrow's schedule")
     registry = slack_bot.ActiveJobRegistry()
     registry.set("C1", "T1", "job123")
     assert registry.get("C1", "T1") == "job123"
@@ -332,8 +332,8 @@ def test_cancel_commands_and_active_job_registry():
 # clean_output
 # --------------------------------------------------------------------------- #
 def test_clean_output_normalizes_ansi_and_crlf():
-    raw = "\x1b[32mListo\x1b[0m\r\n\r\n```python\r\nprint('ok')\r\n```\r\n"
-    assert slack_bot.clean_output(raw) == "Listo\n\n```python\nprint('ok')\n```"
+    raw = "\x1b[32mDone\x1b[0m\r\n\r\n```python\r\nprint('ok')\r\n```\r\n"
+    assert slack_bot.clean_output(raw) == "Done\n\n```python\nprint('ok')\n```"
 
 
 def test_clean_output_preserves_code_and_transcript_examples():
@@ -346,17 +346,17 @@ def test_clean_output_empty():
 
 
 def test_run_prompt_cleans_success_output():
-    resp = _FakeResp({"ok": True, "exit_code": 0, "output": "\x1b[32mHola\x1b[0m\n"})
+    resp = _FakeResp({"ok": True, "exit_code": 0, "output": "\x1b[32mHello\x1b[0m\n"})
     with patch.object(slack_bot.urllib.request, "urlopen", return_value=resp):
-        assert slack_bot.run_prompt("hi", harness_url="http://h:8080") == "Hola"
+        assert slack_bot.run_prompt("hi", harness_url="http://h:8080") == "Hello"
 
 
 # --------------------------------------------------------------------------- #
 # build_reply
 # --------------------------------------------------------------------------- #
 def test_build_reply_plain_prose_stays_plain():
-    assert slack_bot.build_reply("Listo, creé el archivo en /workspace.") == \
-        "Listo, creé el archivo en /workspace."
+    assert slack_bot.build_reply("Done, I created the file in /workspace.") == \
+        "Done, I created the file in /workspace."
 
 
 def test_build_reply_wraps_diff_in_code_block():
@@ -379,14 +379,14 @@ def test_build_reply_wraps_source_code():
 
 
 def test_build_reply_passes_through_existing_fences():
-    fenced = "Aquí tienes:\n```python\nprint(1)\n```"
+    fenced = "Here you go:\n```python\nprint(1)\n```"
     assert slack_bot.build_reply(fenced) == fenced
 
 
 def test_looks_like_code_detects_and_rejects():
     assert slack_bot.looks_like_code("@@ -1 +1 @@\n+x = 1")
     assert slack_bot.looks_like_code("#!/usr/bin/env python3\nprint(1)")
-    assert not slack_bot.looks_like_code("Hola, ¿en qué te ayudo hoy?")
+    assert not slack_bot.looks_like_code("Hello, how can I help you today?")
 
 
 def test_build_reply_bulleted_list_stays_plain():
@@ -438,21 +438,21 @@ def test_post_message_ok(monkeypatch):
         return _Resp()
 
     with patch("urllib.request.urlopen", side_effect=fake_urlopen):
-        ok, err = slack_bot.post_message("C123", "hola")
+        ok, err = slack_bot.post_message("C123", "hello")
     assert ok and err == ""
     assert captured["url"].endswith("/api/chat.postMessage")
-    assert captured["body"]["channel"] == "C123" and captured["body"]["text"] == "hola"
+    assert captured["body"]["channel"] == "C123" and captured["body"]["text"] == "hello"
     assert captured["auth"] == "Bearer xoxb-test"
 
 
 def test_post_message_requires_token(monkeypatch):
     monkeypatch.delenv("SLACK_BOT_TOKEN", raising=False)
-    ok, err = slack_bot.post_message("C123", "hola")
+    ok, err = slack_bot.post_message("C123", "hello")
     assert not ok and "SLACK_BOT_TOKEN" in err
 
 
 def test_build_conversation_prompt_includes_channel():
-    p = slack_bot.build_conversation_prompt("", "hola", channel_id="C999")
+    p = slack_bot.build_conversation_prompt("", "hello", channel_id="C999")
     assert "C999" in p
 
 
@@ -461,15 +461,15 @@ def test_build_conversation_prompt_includes_channel():
 # --------------------------------------------------------------------------- #
 def test_format_thread_labels_roles_and_skips_noise():
     msgs = [
-        {"ts": "1", "text": "crea un hello world", "user": "U1"},
-        {"ts": "2", "text": "hecho", "bot_id": "B1"},
+        {"ts": "1", "text": "create a hello world", "user": "U1"},
+        {"ts": "2", "text": "done", "bot_id": "B1"},
         {"ts": "3", "text": slack_bot.THINKING_TEXT, "bot_id": "B1"},  # placeholder
         {"ts": "3b", "text": slack_bot.THINKING_PHRASES[1], "bot_id": "B1"},  # rotated placeholder
         {"ts": "4", "subtype": "channel_join", "text": "joined"},       # noise
-        {"ts": "5", "text": "donde quedó?", "user": "U1"},              # current msg
+        {"ts": "5", "text": "where is it?", "user": "U1"},              # current msg
     ]
     out = slack_bot.format_thread(msgs, current_ts="5")
-    assert out == "User: crea un hello world\nAssistant: hecho"
+    assert out == "User: create a hello world\nAssistant: done"
 
 
 def test_format_thread_caps_message_count():
@@ -482,27 +482,27 @@ def test_format_thread_keeps_prior_file_share_context():
     msgs = [{
         "ts": "1",
         "subtype": "file_share",
-        "text": "compara esta captura",
+        "text": "compare this screenshot",
         "files": [{"name": "before.png"}],
         "user": "U1",
     }]
     assert slack_bot.format_thread(msgs) == (
-        "User: compara esta captura\n[shared files: before.png]"
+        "User: compare this screenshot\n[shared files: before.png]"
     )
 
 
 def test_build_conversation_prompt_without_history_has_guidance_and_message():
-    prompt = slack_bot.build_conversation_prompt("", "hola")
+    prompt = slack_bot.build_conversation_prompt("", "hello")
     assert "Answer guidance" in prompt
-    assert prompt.strip().endswith("hola")
+    assert prompt.strip().endswith("hello")
 
 
 def test_build_conversation_prompt_with_history_wraps_context():
-    prompt = slack_bot.build_conversation_prompt("User: hi\nAssistant: hello", "y ahora?")
+    prompt = slack_bot.build_conversation_prompt("User: hi\nAssistant: hello", "what next?")
     assert "Answer guidance" in prompt
     assert "conversation so far" in prompt
     assert "User: hi" in prompt and "Assistant: hello" in prompt
-    assert prompt.strip().endswith("User: y ahora?")
+    assert prompt.strip().endswith("User: what next?")
 
 
 # --------------------------------------------------------------------------- #
@@ -523,7 +523,7 @@ def test_is_thinking_text():
     assert slack_bot.is_thinking_text(slack_bot.THINKING_TEXT)
     # Surrounding whitespace is ignored.
     assert slack_bot.is_thinking_text(f"  {slack_bot.THINKING_PHRASES[0]}  ")
-    assert not slack_bot.is_thinking_text("Listo, creé el archivo.")
+    assert not slack_bot.is_thinking_text("Done, I created the file.")
     assert not slack_bot.is_thinking_text("")
 
 
