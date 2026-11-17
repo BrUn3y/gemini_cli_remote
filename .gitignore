@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+secrets/
+workspace/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+.claude/
+node_modules/
+.gemini/oauth_creds.json
+.gemini/google_accounts.json
+.gemini/.env
+.gemini/tmp/
+.gemini/settings.json

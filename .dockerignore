@@ -1,0 +1,11 @@
+.git/
+.env
+.env.*
+.venv/
+secrets/
+workspace/
+.gemini/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store

@@ -1,0 +1,204 @@
+{
+  "info": {
+    "name": "Gemini CLI Remote",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8081"
+    },
+    {
+      "key": "jobId",
+      "value": "replace-with-job-id"
+    },
+    {
+      "key": "scheduleId",
+      "value": "replace-with-schedule-id"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Invoke",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/invoke",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Responde hola\",\n  \"model\": \"auto\",\n  \"yolo\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "List Runs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs"
+      }
+    },
+    {
+      "name": "Create Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/jobs",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Crea hello.py con un saludo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Create Run",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/run",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Crea hello.py con un saludo\",\n  \"check\": \"python3 hello.py\",\n  \"max_attempts\": 3\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Get Run",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/{{jobId}}"
+      }
+    },
+    {
+      "name": "Cancel Run",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/{{jobId}}"
+      }
+    },
+    {
+      "name": "Stream Run",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/jobs/{{jobId}}/stream"
+      }
+    },
+    {
+      "name": "Start And Stream",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/stream",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Lista los archivos del directorio de trabajo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "List Schedules",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/schedules"
+      }
+    },
+    {
+      "name": "Create Schedule",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/schedules",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"cron\": \"0 9 * * 1-5\",\n  \"prompt\": \"Revisa el proyecto\",\n  \"name\": \"Revisión diaria\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Get Schedule",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/schedules/{{scheduleId}}"
+      }
+    },
+    {
+      "name": "Delete Schedule",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/schedules/{{scheduleId}}"
+      }
+    },
+    {
+      "name": "Run Schedule",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/schedules/{{scheduleId}}/run"
+      }
+    }
+  ]
+}

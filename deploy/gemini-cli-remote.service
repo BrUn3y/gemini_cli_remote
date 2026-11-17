@@ -1,0 +1,18 @@
+[Unit]
+Description=Gemini CLI Remote API and optional Slack bot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=CHANGE_ME
+WorkingDirectory=/home/CHANGE_ME/gemini_cli_remote
+Environment=PATH=/home/CHANGE_ME/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/CHANGE_ME/gemini_cli_remote/run-harness.sh
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
